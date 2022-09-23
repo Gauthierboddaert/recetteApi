@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use App\Repository\RecetteRepository;
 use App\Entity\Category;
+use App\Entity\User;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 /**
@@ -36,6 +37,13 @@ class Recette
      * @Groups({"getRecette"})
      */
     private $categoryPlat;
+
+    /**
+     * @ORM\ManyToOne(targetEntity=user::class, inversedBy="recettes", cascade={"persist"})
+     * @ORM\JoinColumn(nullable=false)
+     * @Groups({"getRecette"})
+     */
+    private $user;
 
     
 
@@ -76,6 +84,18 @@ class Recette
     public function setCategoryPlat(?category $categoryPlat): self
     {
         $this->categoryPlat = $categoryPlat;
+
+        return $this;
+    }
+
+    public function getUser(): ?user
+    {
+        return $this->user;
+    }
+
+    public function setUser(?user $user): self
+    {
+        $this->user = $user;
 
         return $this;
     }

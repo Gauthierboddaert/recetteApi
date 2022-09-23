@@ -39,6 +39,24 @@ class RecetteRepository extends ServiceEntityRepository
         }
     }
 
+    public function findRecetteByUser()
+    {
+       return $this->createQueryBuilder('recette')
+                   ->innerJoin('recette.user', 'user')
+                   ->where('recette.user = user.id')
+                   ->getQuery()
+                   ->getResult();
+    }
+
+    public function findUserByID(int $idUser){
+        return $this->createQueryBuilder('recette')
+                    ->innerJoin('recette.user', 'user')
+                    ->where('recette.user = :idUser')
+                    ->setParameter('idUser', $idUser)
+                    ->getQuery()
+                    ->getResult();
+    }
+
 //    /**
 //     * @return Recette[] Returns an array of Recette objects
 //     */

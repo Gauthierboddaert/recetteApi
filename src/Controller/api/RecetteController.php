@@ -1,10 +1,12 @@
 <?php
 
-namespace App\Controller;
+namespace App\Controller\api;
 
 use App\Entity\Recette;
+use App\Entity\User;
 use App\Repository\RecetteRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use JMS\Serializer\JsonDeserializationStrictVisitor;
 use Symfony\Component\Config\Builder\Method;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -16,17 +18,18 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 class RecetteController extends AbstractController
 {
     /**
-     * @Route("/recette", name="app_recette", methods={"GET"})
+     * @Route("api/recette", name="app_recette", methods={"GET"})
      */
     public function index(RecetteRepository $recetteRepository, SerializerInterface $serializerInterface ): JsonResponse
     {
-        $recette = $recetteRepository->findAll();
+        $recette = $recetteRepository->findRecetteByUser();
+        
         $jsonRecette = $serializerInterface->serialize($recette, 'json', ["groups"=>"getRecette"], true);
         return new JsonResponse($jsonRecette, Response::HTTP_OK, [], true);
     }
 
     /**
-     * @Route("/recette/{id}", name="RecetteById", methods={"GET"})
+     * @Route("api/recette/{id}", name="RecetteById", methods={"GET"})
      */
     public function GetRecetteById(int $id,RecetteRepository $recetteRepository, SerializerInterface $serializerInterface) : JsonResponse
     {
@@ -42,7 +45,7 @@ class RecetteController extends AbstractController
     }
 
     /**
-     * @Route("/recette/{id}", name="deleteRecette", methods={"DELETE"})
+     * @Route("api/recette/{id}", name="deleteRecette", methods={"DELETE"})
      */
     public function DeleteRecette(EntityManagerInterface $em,int $id,RecetteRepository $recetteRepository, SerializerInterface $serializerInterface ) :JsonResponse
     {   
@@ -55,7 +58,7 @@ class RecetteController extends AbstractController
    }
 
     /**
-     * @Route("/recette", name="updateRecette", methods={"PUT"})
+     * @Route("api/recette", name="updateRecette", methods={"PUT"})
      */
    public function updateRecette(Request $request,EntityManagerInterface $em,int $id,RecetteRepository $recetteRepository, SerializerInterface $serializerInterface ) :JsonResponse
     {   
@@ -71,11 +74,23 @@ class RecetteController extends AbstractController
         }else{
             return new JsonResponse("La recette n'existe pas", Response::HTTP_OK);
         }
-        
    }
 
+   /**
+    * @Route ("api/recette/user/{idUser}" ,name = "UserByID", methods={"GET"})
+    */
+    public function GetUserByID(int $idUser, RecetteRepository $recetteRepository, SerializerInterface $serializerInterface)  : JsonResponse
+    {
+        $recette = $recetteRepository->findUserByID($idUser);
+        
+        $recetteJson =  $serializerInterface->serialize($recette, 'json');
+
+        return new JsonResponse($recetteJson, Response::HTTP_OK,["groups"=>"getRecette"], true);
+
+    }
+
 //    /**
-//      * @Route("/recette/new", name="newRecette", methods={"POST"})
+//      * @Route("api/recette/new", name="newRecette", methods={"POST"})
 //      */
 //    public function addRecette(Request $request,EntityManagerInterface $em, SerializerInterface $serializerInterface) :JsonResponse
 //    {   

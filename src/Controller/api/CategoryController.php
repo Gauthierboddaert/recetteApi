@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Controller;
+namespace App\Controller\api;
 
 use App\Repository\CategoryRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -12,7 +12,7 @@ use Symfony\Component\Serializer\SerializerInterface;
 class CategoryController extends AbstractController
 {
     /**
-     * @Route("/category", name="app_category")
+     * @Route("api/category", name="app_category")
      */
     public function index(CategoryRepository $categoryRepository): JsonResponse
     {
@@ -24,7 +24,7 @@ class CategoryController extends AbstractController
     }
 
     /**
-     * @Route("/category/{id}", name="categoryById")
+     * @Route("api/category/{id}", name="categoryById")
      */
     public function CategoryById(int $id, CategoryRepository $categoryRepository, SerializerInterface $serializerInterface ) : JsonResponse
     {
