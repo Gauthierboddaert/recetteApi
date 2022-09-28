@@ -5,6 +5,7 @@ namespace App\DataFixtures;
 use App\Entity\Recette;
 use App\Entity\Category;
 use App\Entity\User;
+use App\Enum\EnumCategory;
 use Doctrine\Persistence\ObjectManager;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 
@@ -19,7 +20,7 @@ class AppFixtures extends Fixture
         $user->setUsername('Gauthier');
         for($i = 0;$i<=3;$i++){
             $category = new Category();
-            $category->setType("category .$i");
+            $category->setType(EnumCategory::VIANDE);
             $manager->persist($category);
         }
          

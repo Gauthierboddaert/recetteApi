@@ -6,7 +6,9 @@ use App\Repository\CategoryRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use App\Enum\EnumCategory;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Fresh\DoctrineEnumBundle\Validator\Constraints as DoctrineAssert;
 
 /**
  * @ORM\Entity(repositoryClass=CategoryRepository::class)
@@ -21,7 +23,8 @@ class Category
     private $id;
 
     /**
-     * @ORM\Column(type="string")
+     * @ORM\Column(type="EnumCategory",options={"comment":App\Enum\EnumCategory::VIANDE} )
+     * @DoctrineAssert\Enum(entity="App\Enum\EnumCategory")
      * @Groups({"getRecette"})
      */
     private $type;
