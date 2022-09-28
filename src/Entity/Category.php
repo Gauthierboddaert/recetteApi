@@ -21,7 +21,7 @@ class Category
     private $id;
 
     /**
-     * @ORM\Column(type="string", length=255)
+     * @ORM\Column(type="string")
      * @Groups({"getRecette"})
      */
     private $type;
@@ -39,6 +39,13 @@ class Category
     public function getId(): ?int
     {
         return $this->id;
+    }
+
+    public function setId(int $id): self
+    { 
+        $this->id = $id;
+
+        return $this;
     }
 
     public function getType(): ?string

@@ -39,11 +39,11 @@ class RecetteRepository extends ServiceEntityRepository
         }
     }
 
-    public function findRecetteByUser()
+    public function findRecetteByUser(int $userID)
     {
        return $this->createQueryBuilder('recette')
-                   ->innerJoin('recette.user', 'user')
-                   ->where('recette.user = user.id')
+                   ->where('recette.user = :user')
+                   ->setParameter('user', $userID)
                    ->getQuery()
                    ->getResult();
     }
@@ -57,28 +57,13 @@ class RecetteRepository extends ServiceEntityRepository
                     ->getResult();
     }
 
-//    /**
-//     * @return Recette[] Returns an array of Recette objects
-//     */
-//    public function findByExampleField($value): array
-//    {
-//        return $this->createQueryBuilder('r')
-//            ->andWhere('r.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->orderBy('r.id', 'ASC')
-//            ->setMaxResults(10)
-//            ->getQuery()
-//            ->getResult()
-//        ;
-//    }
-
-//    public function findOneBySomeField($value): ?Recette
-//    {
-//        return $this->createQueryBuilder('r')
-//            ->andWhere('r.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->getQuery()
-//            ->getOneOrNullResult()
-//        ;
-//    }
+    public function findFavoriteByUser(int $userID)
+    {
+        return $this->createQueryBuilder('recette')
+                    ->leftJoin('recette.favories', 'recette_user')
+                    ->where('recette_user.id = :userID')
+                    ->setParameter('userID', $userID)
+                    ->getQuery()
+                    ->getResult();
+    }
 }

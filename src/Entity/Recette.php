@@ -5,6 +5,8 @@ namespace App\Entity;
 use App\Repository\RecetteRepository;
 use App\Entity\Category;
 use App\Entity\User;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 /**
@@ -33,7 +35,7 @@ class Recette
     private $description;
 
     /**
-     * @ORM\ManyToOne(targetEntity=category::class, inversedBy="recettes")
+     * @ORM\ManyToOne(targetEntity=category::class, inversedBy="recettes", cascade={"persist"})
      * @Groups({"getRecette"})
      */
     private $categoryPlat;
@@ -44,6 +46,16 @@ class Recette
      * @Groups({"getRecette"})
      */
     private $user;
+
+    /**
+     * @ORM\ManyToMany(targetEntity=user::class, inversedBy="favoriesRecette")
+     */
+    private $favories;
+
+    public function __construct()
+    {
+        $this->favories = new ArrayCollection();
+    }
 
     
 
@@ -76,13 +88,17 @@ class Recette
         return $this;
     }
 
-    public function getCategoryPlat(): ?category
+    public function getCategoryPlat(): ?Category
     {
         return $this->categoryPlat;
     }
 
-    public function setCategoryPlat(?category $categoryPlat): self
+    public function setCategoryPlat(?Category $categoryPlat): self
     {
+        if (null !== $categoryPlat && !$categoryPlat->getRecettes()->contains($this)) {
+            $categoryPlat->addRecette($this);
+        }
+
         $this->categoryPlat = $categoryPlat;
 
         return $this;
@@ -96,6 +112,30 @@ class Recette
     public function setUser(?user $user): self
     {
         $this->user = $user;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, user>
+     */
+    public function getFavories(): Collection
+    {
+        return $this->favories;
+    }
+
+    public function addFavory(user $favory): self
+    {
+        if (!$this->favories->contains($favory)) {
+            $this->favories[] = $favory;
+        }
+
+        return $this;
+    }
+
+    public function removeFavory(user $favory): self
+    {
+        $this->favories->removeElement($favory);
 
         return $this;
     }

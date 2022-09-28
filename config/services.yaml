@@ -9,7 +9,7 @@ services:
     admin.recette:
             class: App\Admin\RecetteAdmin
             tags:
-                - { name: sonata.admin, model_class: App\Entity\Recette, manager_type: orm, label: Recette }
+                
 
 
 
