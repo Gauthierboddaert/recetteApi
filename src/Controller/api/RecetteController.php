@@ -3,48 +3,61 @@
 namespace App\Controller\api;
 
 use App\Entity\User;
+use App\Entity\Image;
 use App\Entity\Recette;
 use App\Entity\Category;
+use App\Enum\EnumCategory;
 use App\Repository\RecetteRepository;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Component\Config\Builder\Method;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use JMS\Serializer\JsonDeserializationStrictVisitor;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasher;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 class RecetteController extends AbstractController
 {
 
-    //A demander : 
-    // - Enum Erreur ???
-    // - Changer l'id de ma table Recette lors de la méthode Put
-    // Où stocker mes images ? dans le serveur ? 
+   
+    private SerializerInterface $serializerInterface;
+    private RecetteRepository $recetteRepository;
+    private EntityManagerInterface $em;
+
+    public function __construct(
+        SerializerInterface $serializerInterface,
+        RecetteRepository $recetteRepository,
+        EntityManagerInterface $em
+        )
+    {
+        $this->serializerInterface = $serializerInterface;
+        $this->recetteRepository = $recetteRepository;
+        $this->em = $em;
+    }
 
     /**
      * @Route("api/recette", name="app_recette", methods={"GET"})
      */
-    public function index(RecetteRepository $recetteRepository, SerializerInterface $serializerInterface ): JsonResponse
+    public function index(): JsonResponse
     {
-        $recette = $recetteRepository->findAll();
         
-        $jsonRecette = $serializerInterface->serialize($recette, 'json', ["groups"=>"getRecette"], true);
+        $recette = $this->recetteRepository->findAll();
+        
+        $jsonRecette = $this->serializerInterface->serialize($recette, 'json', ["groups"=>"getRecette"], true);
         return new JsonResponse($jsonRecette, Response::HTTP_OK, [], true);
     }
 
     /**
      * @Route("api/recette/{id}", name="RecetteById", methods={"GET"})
      */
-    public function GetRecetteById(int $id,RecetteRepository $recetteRepository, SerializerInterface $serializerInterface) : JsonResponse
+    public function GetRecetteById(int $id) : JsonResponse
     {
         
-        $recette = $recetteRepository->find($id);
+        $recette = $this->recetteRepository->find($id);
             if($recette != null){
-                $jsonRecette = $serializerInterface->serialize($recette, 'json');
+                $jsonRecette = $this->serializerInterface->serialize($recette, 'json');
                 return new JsonResponse($jsonRecette, Response::HTTP_OK, ["groups"=>"getRecette"], true);
             }
             else{
@@ -55,12 +68,12 @@ class RecetteController extends AbstractController
     /**
      * @Route("api/recette/{id}", name="deleteRecette", methods={"DELETE"})
      */
-    public function DeleteRecette(EntityManagerInterface $em,int $id,RecetteRepository $recetteRepository, SerializerInterface $serializerInterface ) :JsonResponse
+    public function DeleteRecette(int $id) :JsonResponse
     {   
-        $recette = $recetteRepository->find($id);
+        $recette = $this->recetteRepository->find($id);
     
-        $em->remove($recette);
-        $em->flush();
+        $this->em->remove($recette);
+        $this->em->flush();
         
         return new JsonResponse(null, Response::HTTP_NO_CONTENT);
    }
@@ -68,18 +81,20 @@ class RecetteController extends AbstractController
     /**
      * @Route("api/recette/{id}", name="updateRecette", methods={"PUT"})
      */
-   public function updateRecette(Request $request,EntityManagerInterface $em,int $id,RecetteRepository $recetteRepository) :JsonResponse
+   public function updateRecette(int $id, Request $request) :JsonResponse
     {   
-        $recette = $recetteRepository->find($id);
+        $recette = $this->recetteRepository->find($id);
         $data = $request->toArray();
-        $category = $em->getRepository(Category::class)->find($data['categoryPlat']['id']);
+        $category = $this->em->getRepository(Category::class)->find($data['categoryPlat']['id']);
+        // $image = $this->em->getRepository(Image::class)->find($data['Images'][0]);    
         
-        if($recette != null){
-            
+        if($recette != null){    
             $recette->setTitle($data['title']);
+            $recette->setTitle($data['description']);
             $recette->setCategoryPlat($category);
+            
            
-            $em->flush();
+            $this->em->flush();
 
             return new JsonResponse(null, Response::HTTP_NO_CONTENT);
         }
@@ -89,11 +104,11 @@ class RecetteController extends AbstractController
    /**
     * @Route ("api/recette/user/{idUser}" ,name = "UserByID", methods={"GET"})
     */
-    public function GetUserByID(int $idUser, RecetteRepository $recetteRepository, SerializerInterface $serializerInterface)  : JsonResponse
+    public function GetUserByID(int $idUser)  : JsonResponse
     {
-        $recette = $recetteRepository->findUserByID($idUser);
+        $recette = $this->recetteRepository->findUserByID($idUser);
         
-        $recetteJson =  $serializerInterface->serialize($recette, 'json');
+        $recetteJson =  $this->serializerInterface->serialize($recette, 'json');
 
         return new JsonResponse($recetteJson, Response::HTTP_OK,["groups"=>"getRecette"], true);
 
@@ -103,36 +118,54 @@ class RecetteController extends AbstractController
    /**
      * @Route("api/recette/new", name="newRecette", methods={"POST"})
      */
-   public function addRecette(UserPasswordHasherInterface $userPasswordHasher, Request $request,EntityManagerInterface $em, SerializerInterface $serializerInterface) :JsonResponse
+   public function addRecette(Request $request, UserPasswordHasherInterface $userPasswordHasher) :JsonResponse
    {   
         $recette = new Recette();
         $category = new Category();
-        $user = new User();
-     
         $data = $request->toArray();
-        $user->setId($data['user']['id']);
-        $user->setEmail($data['user']['email']);
-        $user->setPassword($data['user']['password']);
-        $user->setUsername($data['user']['username']);
+        $user = new User();
+        
+        $user->setEmail("bd@gmail.Com");
+        $user->setUsername("boddaert");
         $user->setPassword(
             $userPasswordHasher->hashPassword(
                 $user,
-                $data['user']['password']
+                "coucou"
             )
         );
-        $category->setType("viande");
+        // $user = $security->getUser();
+        
+        // $user->setEmail($data['user']['email']);
+        // $user->setPassword($data['user']['password']);
+        // $user->setUsername($data['user']['username']);
+        // $user->setPassword(
+        //     $userPasswordHasher->hashPassword(
+        //         $user,
+        //         $data['user']['password']
+        //     )
+        // );
+        
+        foreach($data['images'] as $img){
+            $image = new Image();
+            $image->setPath($img['path']);   
+            $recette->addImage($image);
+            $this->em->persist($image);
+        }
+        
+     
+        $category->setType(EnumCategory::VIANDE);
         $recette->setTitle($data['title']);
         $recette->setDescription($data['description']);
-        $recette->setUser($user);
+        $recette->setUser($this->getUser());
         $recette->setCategoryPlat($category);
-        
-        $em->persist($category);
-        $em->persist($recette);
-        $em->persist($user);
+        $recette->setUser($user);
+        $this->em->persist($category);
+        $this->em->persist($recette);
        
-        $em->flush();
+       
+        $this->em->flush();
 
-       $jsonRecette = $serializerInterface->serialize($recette, 'json', ["groups"=>"getRecette"]);
+       $jsonRecette = $this->serializerInterface->serialize($recette, 'json', ["groups"=>"getRecette"]);
        return new JsonResponse($jsonRecette, Response::HTTP_CREATED, [], true);
    
   }

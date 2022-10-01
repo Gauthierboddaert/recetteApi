@@ -52,9 +52,16 @@ class Recette
      */
     private $favories;
 
+    /**
+     * @ORM\OneToMany(targetEntity=Image::class, mappedBy="recette", orphanRemoval=true,  cascade={"persist"})
+     * @Groups({"getRecette"})
+     */
+    private $images;
+
     public function __construct()
     {
         $this->favories = new ArrayCollection();
+        $this->images = new ArrayCollection();
     }
 
     
@@ -136,6 +143,36 @@ class Recette
     public function removeFavory(user $favory): self
     {
         $this->favories->removeElement($favory);
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Image>
+     */
+    public function getImages(): Collection
+    {
+        return $this->images;
+    }
+
+    public function addImage(Image $image): self
+    {
+        if (!$this->images->contains($image)) {
+            $this->images[] = $image;
+            $image->setRecette($this);
+        }
+
+        return $this;
+    }
+
+    public function removeImage(Image $image): self
+    {
+        if ($this->images->removeElement($image)) {
+            // set the owning side to null (unless already changed)
+            if ($image->getRecette() === $this) {
+                $image->setRecette(null);
+            }
+        }
 
         return $this;
     }

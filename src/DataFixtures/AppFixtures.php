@@ -4,6 +4,7 @@ namespace App\DataFixtures;
 
 use App\Entity\Recette;
 use App\Entity\Category;
+use App\Entity\Image;
 use App\Entity\User;
 use App\Enum\EnumCategory;
 use Doctrine\Persistence\ObjectManager;
@@ -27,7 +28,10 @@ class AppFixtures extends Fixture
 
         $faker = Factory::create("fr-FR");
         $user = new User();
-        $user->setEmail($faker->name()."@gmail.com");
+        $image = new Image();
+        $image->setPath("/root/rere");
+        $user->setEmail("g@gmail.com");
+        $user->setRoles(['PUBLIC_ACCESS']);
         $user->setPassword($this->userPasswordHasher->hashPassword($user, "coucou"));
         $user->setUsername($faker->name());
         for($i = 0;$i<=3;$i++){
@@ -42,6 +46,8 @@ class AppFixtures extends Fixture
             $recette->setDescription($faker->text(100));
             $recette->setUser($user);
             $recette->setCategoryPlat($category);
+            $recette->addImage($image);
+           
             $manager->persist($recette);
         };
 

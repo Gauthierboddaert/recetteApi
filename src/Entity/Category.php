@@ -23,7 +23,7 @@ class Category
     private $id;
 
     /**
-     * @ORM\Column(type="EnumCategory",options={"comment":App\Enum\EnumCategory::VIANDE} )
+     * @ORM\Column(type="EnumCategory",options={"comment":App\Enum\EnumCategory::BOISSON} )
      * @DoctrineAssert\Enum(entity="App\Enum\EnumCategory")
      * @Groups({"getRecette"})
      */
