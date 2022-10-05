@@ -16,7 +16,9 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasher;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+use Symfony\Component\Security\Core\Security;
 
 class RecetteController extends AbstractController
 {
@@ -25,28 +27,34 @@ class RecetteController extends AbstractController
     private SerializerInterface $serializerInterface;
     private RecetteRepository $recetteRepository;
     private EntityManagerInterface $em;
+    private Security $security;
 
     public function __construct(
         SerializerInterface $serializerInterface,
         RecetteRepository $recetteRepository,
-        EntityManagerInterface $em
+        EntityManagerInterface $em,
+        Security $security
         )
     {
         $this->serializerInterface = $serializerInterface;
         $this->recetteRepository = $recetteRepository;
         $this->em = $em;
+        $this->security = $security;
     }
 
     /**
      * @Route("api/recette", name="app_recette", methods={"GET"})
+     * 
      */
     public function index(): JsonResponse
     {
-        
-        $recette = $this->recetteRepository->findAll();
-        
-        $jsonRecette = $this->serializerInterface->serialize($recette, 'json', ["groups"=>"getRecette"], true);
-        return new JsonResponse($jsonRecette, Response::HTTP_OK, [], true);
+        if ($this->security->isGranted('IS_AUTHENTICATED_ANONYMOUSLY')) {
+
+            $recette = $this->recetteRepository->findAll();
+            $jsonRecette = $this->serializerInterface->serialize($recette, 'json', ["groups"=>"getRecette"], true);
+            return new JsonResponse($jsonRecette, Response::HTTP_OK, [], true);
+        }
+        return new JsonResponse("");
     }
 
     /**
@@ -57,7 +65,7 @@ class RecetteController extends AbstractController
         
         $recette = $this->recetteRepository->find($id);
             if($recette != null){
-                $jsonRecette = $this->serializerInterface->serialize($recette, 'json');
+                $jsonRecette = $this->serializerInterface->serialize($recette, 'json', ["groups"=>"getRecette"]);
                 return new JsonResponse($jsonRecette, Response::HTTP_OK, ["groups"=>"getRecette"], true);
             }
             else{

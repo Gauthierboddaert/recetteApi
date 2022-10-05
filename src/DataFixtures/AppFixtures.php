@@ -17,14 +17,16 @@ class AppFixtures extends Fixture
 {
 
     private $userPasswordHasher;
-    
-    public function __construct(UserPasswordHasherInterface $userPasswordHasher)
+    private string $image;
+    public function __construct(UserPasswordHasherInterface $userPasswordHasher, $image)
     {
         $this->userPasswordHasher = $userPasswordHasher;
+        $this->image = $image;
     }
 
     public function load(ObjectManager $manager): void
     {
+        dd($this->image);
         $faker = Factory::create("fr-FR");
 
         $user = new User();
