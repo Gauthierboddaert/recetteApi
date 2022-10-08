@@ -21,18 +21,19 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
-     * @Groups({"getRecette"})
+     * @Groups({"getRecette", "getUser"})
      */
     private $id;
 
     /**
      * @ORM\Column(type="string", length=180, unique=true)
-     * @Groups({"getRecette"})
+     * @Groups({"getRecette","getUser"})
      */
     private $email;
 
     /**
      * @ORM\Column(type="json")
+     * @Groups({"getUser"})
      */
     private $roles = [];
 
@@ -49,7 +50,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     /**
      * @ORM\Column(type="string", length=255)
-     * 
+     * @Groups({"getUser"})
      */
     private $username;
 

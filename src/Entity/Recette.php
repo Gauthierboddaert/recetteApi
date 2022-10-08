@@ -5,6 +5,7 @@ namespace App\Entity;
 use App\Repository\RecetteRepository;
 use App\Entity\Category;
 use App\Entity\User;
+use App\Repository\UserRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -106,6 +107,7 @@ class Recette
             $categoryPlat->addRecette($this);
         }
 
+        
         $this->categoryPlat = $categoryPlat;
 
         return $this;
@@ -118,6 +120,12 @@ class Recette
 
     public function setUser(?user $user): self
     {
+
+        if (null !== $user && !$user->getRecettes()->contains($this)) {
+          
+            $user->addRecette($this);
+        }
+
         $this->user = $user;
 
         return $this;

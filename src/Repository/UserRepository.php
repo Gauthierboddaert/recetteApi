@@ -4,6 +4,7 @@ namespace App\Repository;
 
 use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\Common\Collections\Criteria;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\Security\Core\Exception\UnsupportedUserException;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
@@ -24,22 +25,14 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         parent::__construct($registry, User::class);
     }
 
-    public function add(User $entity, bool $flush = false): void
+    public function findUserByEmail(string $email) : array
     {
-        $this->getEntityManager()->persist($entity);
-
-        if ($flush) {
-            $this->getEntityManager()->flush();
-        }
-    }
-
-    public function remove(User $entity, bool $flush = false): void
-    {
-        $this->getEntityManager()->remove($entity);
-
-        if ($flush) {
-            $this->getEntityManager()->flush();
-        }
+        return $this->createQueryBuilder('user')
+                    ->addCriteria(Criteria::create()->andWhere(
+                        Criteria::expr()->eq('user.email',$email)
+                    ))
+                    ->getQuery()
+                    ->getResult();
     }
 
     /**
@@ -55,4 +48,6 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
 
         $this->add($user, true);
     }
+
+    
 }
